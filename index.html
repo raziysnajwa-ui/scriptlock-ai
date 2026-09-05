@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ScriptLock AI</title>
-
+  
   <style>
     body {
       margin: 0;
@@ -46,6 +46,7 @@
       border: 1px solid #444;
       border-radius: 10px;
       font-size: 16px;
+      resize: vertical;
     }
 
     button {
@@ -59,6 +60,16 @@
       font-size: 17px;
       font-weight: bold;
       cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background: #6d28d9;
+    }
+
+    button:disabled {
+      background: #4c1d95;
+      cursor: not-allowed;
     }
 
     #result {
@@ -68,45 +79,83 @@
       border-radius: 10px;
       display: none;
     }
+
+    #videoPlayer {
+      width: 100%;
+      margin-top: 15px;
+      border-radius: 8px;
+      display: none;
+    }
   </style>
 </head>
-
 <body>
 
   <div class="container">
-
-    <h1>🎬 ScriptLock AI</h1>
-
+    <h1>ScriptLock AI</h1>
     <p>Turn your script into a video.</p>
 
     <div class="box">
-
       <textarea id="script" placeholder="Paste your script here..."></textarea>
-
-      <button onclick="generateVideo()">
-        Generate Video
-      </button>
-
+      <button id="generateBtn" onclick="generateVideo()">Generate Video</button>
+      
       <div id="result"></div>
-
+      <video id="videoPlayer" controls></video>
     </div>
-
   </div>
 
   <script>
-    function generateVideo() {
-      const script = document.getElementById("script").value.trim();
-      const result = document.getElementById("result");
+    async function generateVideo() {
+      const scriptInput = document.getElementById('script').value.trim();
+      const resultDiv = document.getElementById('result');
+      const videoPlayer = document.getElementById('videoPlayer');
+      const generateBtn = document.getElementById('generateBtn');
 
-      result.style.display = "block";
-
-      if (!script) {
-        result.innerHTML = "⚠️ Please paste your script first.";
+      if (!scriptInput) {
+        resultDiv.style.display = "block";
+        resultDiv.innerHTML = "⚠️ Please enter a script before generating.";
+        resultDiv.style.color = "#f87171";
         return;
       }
 
-      result.innerHTML =
-        "✅ Script received! ScriptLock AI is ready for the video-generation connection.";
+      // Update UI for loading state
+      resultDiv.style.display = "block";
+      resultDiv.style.color = "#4ade80";
+      resultDiv.innerHTML = "⏳ Processing script and generating video. Please wait...";
+      generateBtn.disabled = true;
+      videoPlayer.style.display = "none";
+
+      try {
+        /* 
+           BACKEND API INTEGRATION PLACEHOLDER:
+           Since GitHub Pages hosts static files, you must route your request to an external server.
+           Example endpoint targeting a backend running on Modal, Google Colab, or Render:
+        */
+        const API_ENDPOINT = "https://your-backend-api-url.com/generate";
+
+        const response = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ script: scriptInput })
+        });
+
+        if (!response.ok) {
+          throw new Error('API request failed');
+        }
+
+        const data = await response.json();
+
+        // Display the generated video
+        resultDiv.innerHTML = "✅ Video generated successfully!";
+        videoPlayer.src = data.video_url; 
+        videoPlayer.style.display = "block";
+
+      } catch (error) {
+        // Mock success fallback for offline or testing purposes
+        console.warn("API call failed or endpoint not set. Showing temporary demo status.");
+        resultDiv.innerHTML = "✔️ Script received! Connect your video generation API to render output.";
+      } finally {
+        generateBtn.disabled = false;
+      }
     }
   </script>
 
