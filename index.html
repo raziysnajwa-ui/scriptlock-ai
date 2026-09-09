@@ -4,86 +4,87 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ScriptLock AI</title>
-  
+
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background: #0b0b12;
       color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      box-sizing: border-box;
     }
 
     .container {
-      max-width: 850px;
-      margin: auto;
-      padding: 50px 20px;
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
     }
 
     h1 {
-      text-align: center;
-      font-size: 42px;
+      margin-bottom: 8px;
     }
 
     p {
-      text-align: center;
-      color: #aaa;
-    }
-
-    .box {
-      background: #151520;
-      padding: 25px;
-      border-radius: 16px;
-      margin-top: 30px;
+      color: #a0a0b0;
+      margin-bottom: 24px;
     }
 
     textarea {
       width: 100%;
-      height: 250px;
-      padding: 15px;
-      box-sizing: border-box;
-      background: #0d0d15;
+      height: 150px;
+      background: #141421;
+      border: 1px solid #33334d;
+      border-radius: 12px;
+      padding: 16px;
       color: white;
-      border: 1px solid #444;
-      border-radius: 10px;
       font-size: 16px;
       resize: vertical;
+      box-sizing: border-box;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: #8b5cf6;
     }
 
     button {
       width: 100%;
-      margin-top: 15px;
-      padding: 15px;
-      background: #7c3aed;
+      margin-top: 16px;
+      padding: 14px;
+      background: #8b5cf6;
       color: white;
       border: none;
-      border-radius: 10px;
-      font-size: 17px;
+      border-radius: 12px;
+      font-size: 16px;
       font-weight: bold;
       cursor: pointer;
       transition: background 0.2s ease;
     }
 
     button:hover {
-      background: #6d28d9;
+      background: #7c3aed;
     }
 
     button:disabled {
-      background: #4c1d95;
+      background: #4c4c66;
       cursor: not-allowed;
     }
 
     #result {
       margin-top: 20px;
-      padding: 15px;
-      background: #0d0d15;
-      border-radius: 10px;
-      display: none;
+      font-size: 15px;
     }
 
-    #videoPlayer {
+    video {
+      margin-top: 20px;
       width: 100%;
-      margin-top: 15px;
-      border-radius: 8px;
+      border-radius: 12px;
       display: none;
     }
   </style>
@@ -92,50 +93,38 @@
 
   <div class="container">
     <h1>ScriptLock AI</h1>
-    <p>Turn your script into a video.</p>
+    <p>Turn your script into a video</p>
 
-    <div class="box">
-      <textarea id="script" placeholder="Paste your script here..."></textarea>
-      <button id="generateBtn" onclick="generateVideo()">Generate Video</button>
-      
-      <div id="result"></div>
-      <video id="videoPlayer" controls></video>
-    </div>
+    <textarea id="scriptInput" placeholder="Type or paste your video script here..."></textarea>
+    <button id="generateBtn" onclick="generateVideo()">Generate Video</button>
+
+    <div id="result"></div>
+    <video id="videoPlayer" controls></video>
   </div>
 
   <script>
     async function generateVideo() {
-      const scriptInput = document.getElementById('script').value.trim();
+      const scriptInput = document.getElementById('scriptInput');
+      const generateBtn = document.getElementById('generateBtn');
       const resultDiv = document.getElementById('result');
       const videoPlayer = document.getElementById('videoPlayer');
-      const generateBtn = document.getElementById('generateBtn');
 
-      if (!scriptInput) {
-        resultDiv.style.display = "block";
-        resultDiv.innerHTML = "⚠️ Please enter a script before generating.";
-        resultDiv.style.color = "#f87171";
+      const scriptText = scriptInput.value.trim();
+
+      if (!scriptText) {
+        resultDiv.innerHTML = "<span style='color: #ef4444;'>Please enter a script first.</span>";
         return;
       }
 
-      // Update UI for loading state
-      resultDiv.style.display = "block";
-      resultDiv.style.color = "#4ade80";
-      resultDiv.innerHTML = "⏳ Processing script and generating video. Please wait...";
       generateBtn.disabled = true;
+      resultDiv.innerHTML = "<span style='color: #a0a0b0;'>Generating video, please wait...</span>";
       videoPlayer.style.display = "none";
 
       try {
-        /* 
-           BACKEND API INTEGRATION PLACEHOLDER:
-           Since GitHub Pages hosts static files, you must route your request to an external server.
-           Example endpoint targeting a backend running on Modal, Google Colab, or Render:
-        */
-        const API_ENDPOINT = "https://your-backend-api-url.com/generate";
-
         const response = await fetch('https://pretty-bushes-end.loca.lt/generate-video', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ script: scriptInput })
+          body: JSON.stringify({ script: scriptText })
         });
 
         if (!response.ok) {
@@ -144,15 +133,14 @@
 
         const data = await response.json();
 
-        // Display the generated video
-        resultDiv.innerHTML = "✅ Video generated successfully!";
-        videoPlayer.src = data.video_url; 
-        videoPlayer.style.display = "block";
-
+        resultDiv.innerHTML = "<span style='color: #22c55e;'>✓ Video generated successfully!</span>";
+        if (data.video_url) {
+          videoPlayer.src = data.video_url;
+          videoPlayer.style.display = "block";
+        }
       } catch (error) {
-        // Mock success fallback for offline or testing purposes
-        console.warn("API call failed or endpoint not set. Showing temporary demo status.");
-        resultDiv.innerHTML = "✔️ Script received! Connect your video generation API to render output.";
+        console.error(error);
+        resultDiv.innerHTML = "<span style='color: #ef4444;'>Error generating video. Make sure your Colab backend is running!</span>";
       } finally {
         generateBtn.disabled = false;
       }
